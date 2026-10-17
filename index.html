@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRON MAN | PROTOTYPE</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #050a08;
+    color: #00ff88;
+    font-family: monospace;
+}
+
+header {
+    padding: 18px;
+    text-align: center;
+    border-bottom: 1px solid #00ff88;
+    background: #07120d;
+}
+
+header h1 {
+    margin: 0;
+    letter-spacing: 3px;
+}
+
+header p {
+    color: #8affbb;
+}
+
+.container {
+    width: min(1000px, 94%);
+    margin: 25px auto;
+}
+
+.panel {
+    border: 1px solid #00ff88;
+    background: #08110d;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 12px #003b20;
+}
+
+h2 {
+    font-size: 18px;
+}
+
+input, textarea, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #020604;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    font-family: monospace;
+}
+
+button {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #003b20;
+}
+
+#app {
+    display: none;
+}
+
+#messages {
+    height: 250px;
+    overflow-y: auto;
+    border: 1px solid #174a31;
+    padding: 10px;
+    overflow-wrap: anywhere;
+}
+
+.message {
+    padding: 8px 0;
+    border-bottom: 1px solid #173524;
+}
+
+.muted {
+    color: #85a994;
+    font-size: 12px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 15px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #608b72;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>IRON MAN</h1>
+    <p>DEMO PART 2 | TEAM MISSION CONTROL</p>
+    <div>● PROTOTYPE INTERFACE</div>
+</header>
+
+<main class="container">
+
+    <section class="panel" id="login">
+        <h2>🔐 TEAM AUTHENTICATION</h2>
+        <p class="muted">
+            Sign in with your assigned team username and password.
+        </p>
+
+        <input id="username" placeholder="Team username"
+               autocomplete="username">
+
+        <input id="password" type="password"
+               placeholder="Password"
+               autocomplete="current-password">
+
+        <button id="loginButton">SIGN IN</button>
+
+        <p id="loginStatus" role="status"></p>
+
+        <p class="muted">
+            Authentication will be enabled after the Cloudflare API
+            is connected. This prototype does not authenticate users.
+        </p>
+    </section>
+
+    <section id="app">
+
+        <div class="panel">
+            <h2>MISSION CONTROL</h2>
+            <p>Signed in as: <strong id="currentUser"></strong></p>
+            <p>API status: <span id="apiStatus">CHECKING...</span></p>
+            <button id="logoutButton">LOG OUT</button>
+        </div>
+
+        <div class="grid">
+
+            <section class="panel">
+                <h2>TEAM MEMBERS</h2>
+                <p>● Abhinav</p>
+                <p>● Hairik</p>
+                <p>● Daksh</p>
+                <p>● Sidharth</p>
+                <p class="muted">Online status will be connected later.</p>
+            </section>
+
+            <section class="panel">
+                <h2>CHAMPAK AI</h2>
+                <div id="aiMessages" aria-live="polite">
+                    <p>CHAMPAK: AI connection pending.</p>
+                </div>
+
+                <textarea id="aiInput" rows="3"
+                    placeholder="Ask CHAMPAK..."></textarea>
+
+                <button id="aiButton">SEND TO CHAMPAK</button>
+            </section>
+
+        </div>
+
+        <section class="panel">
+            <h2>TEAM DISCUSSION</h2>
+
+            <div id="messages" aria-live="polite">
+                <p class="muted">
+                    Shared messages will appear here after the backend
+                    is connected.
+                </p>
+            </div>
+
+            <textarea id="messageInput" rows="3"
+                placeholder="Write a team message..."></textarea>
+
+            <button id="sendButton">SEND MESSAGE</button>
+        </section>
+
+        <section class="panel" id="adminPanel" hidden>
+            <h2>ADMIN CONTROL</h2>
+            <p>Admin tools will be enabled by the secure backend.</p>
+            <p class="muted">
+                Ban controls must be authorized by Cloudflare,
+                not by this page.
+            </p>
+        </section>
+
+    </section>
+
+</main>
+
+<footer>
+    IRON MAN DEMO PART 2 · CHAMPAK SYSTEM
+</footer>
+
+<script>
+"use strict";
+
+// Set this after creating your Cloudflare Worker.
+const API_URL = "";
+
+const loginForm = document.getElementById("login");
+const app = document.getElementById("app");
+const loginStatus = document.getElementById("loginStatus");
+
+document.getElementById("loginButton").addEventListener("click", () => {
+    loginStatus.textContent =
+        "Backend not connected. No login has occurred.";
+});
+
+document.getElementById("logoutButton").addEventListener("click", () => {
+    app.style.display = "none";
+    loginForm.style.display = "block";
+    document.getElementById("password").value = "";
+});
+
+document.getElementById("sendButton").addEventListener("click", () => {
+    alert("Team chat is not connected to Cloudflare yet.");
+});
+
+document.getElementById("aiButton").addEventListener("click", () => {
+    alert("CHAMPAK AI is not connected to Gemini yet.");
+});
+
+async function checkAPI() {
+    if (!API_URL) {
+        document.getElementById("apiStatus").textContent =
+            "NOT CONNECTED";
+        return;
+    }
+
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error("API unavailable");
+
+        const data = await response.json();
+
+        document.getElementById("apiStatus").textContent =
+            data.status || "ONLINE";
+    } catch {
+        document.getElementById("apiStatus").textContent =
+            "CONNECTION FAILED";
+    }
+}
+
+checkAPI();
+</script>
+
+</body>
+</html>
